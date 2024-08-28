@@ -16,5 +16,8 @@
   ],
   "peerDependencies": {
     "koishi": "^4.17.11"
+  },
+  "dependencies": {
+    "puppeteer": "^23.2.0"
   }
 }
