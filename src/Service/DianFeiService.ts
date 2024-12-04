@@ -3,17 +3,29 @@ import "koishi-plugin-puppeteer";
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-const inputUser =
+const SinputUser =
   "body > uni-app > uni-page > uni-page-wrapper > uni-page-body > uni-view > uni-view:nth-child(2) > uni-view > uni-input > div > input";
-const inputPwd =
+const SinputPwd =
   "body > uni-app > uni-page > uni-page-wrapper > uni-page-body > uni-view > uni-view:nth-child(3) > uni-view > uni-input > div > input";
-const button =
+const Sbutton =
   "body > uni-app > uni-page > uni-page-wrapper > uni-page-body > uni-view > uni-button";
-const total =
-  "body > uni-app > uni-page > uni-page-wrapper > uni-page-body > uni-view > uni-view:nth-child(1) > uni-view.padding.bg-white > uni-view > uni-view:nth-child(1) > uni-view.cmd-progress.cmd-progress-default.cmd-progress-status-success.cmd-progress-show-info.cmd-progress-circle.cmd-progress-status-normal > uni-view > uni-view > uni-text.cmd-progress-text > span";
+//已用电
+const Selectricity =
+  "body > uni-app > uni-page > uni-page-wrapper > uni-page-body > uni-view > uni-view:nth-child(1) > uni-view.padding.bg-white > uni-view > uni-view:nth-child(1) > uni-view.cmd-progress.cmd-progress-default.cmd-progress-status-success.cmd-progress-show-info.cmd-progress-circle.cmd-progress-status-normal > uni-view > uni-view > uni-text.cmd-progress-text";
+//余额
+const Sbalance =
+  "body > uni-app > uni-page > uni-page-wrapper > uni-page-body > uni-view > uni-view:nth-child(1) > uni-view.padding.bg-white > uni-view > uni-view:nth-child(2) > uni-view.cmd-progress.cmd-progress-default.cmd-progress-status-success.cmd-progress-show-info.cmd-progress-circle.cmd-progress-status-normal > uni-view > uni-view > uni-text.cmd-progress-text";
 
+const SNO =
+  "body > uni-app > uni-page > uni-page-wrapper > uni-page-body > uni-view > uni-view:nth-child(1) > uni-view.stitle > uni-view > uni-text:nth-child(1)";
 export class DianFeiService {
-  async getDianFeiImg(ctx: Context, url: string, user: string, pwd: string) {
+  async getPage(
+    ctx: Context,
+    url: string,
+    user: string,
+    pwd: string,
+    getImage: boolean
+  ): Promise<any> {
     const l = ctx.logger("dianfei");
 
     let page = await ctx.puppeteer.browser.newPage();
@@ -26,33 +38,56 @@ export class DianFeiService {
       });
       l.info("加载登录完成");
       try {
-        await page.waitForSelector(inputUser, { timeout: 2000 }); // 设置 2 秒超时
-        l.info("登录元素存在");
-        await page.waitForSelector(inputUser);
-        await page.type(inputUser, user);
-
-        await page.waitForSelector(inputPwd);
-        await page.type(inputPwd, pwd);
-
-        await sleep(1500);
-        await page.click(button);
-        await page.waitForNavigation();
         if (page.url() !== url + "/pages/index/index") {
-          l.info("登录失败,重试中");
-          continue;
-        }
+          await page.waitForSelector(SinputUser, { timeout: 2000 }); // 设置 2 秒超时
+          l.info("登录元素存在");
+          await page.waitForSelector(SinputUser);
+          await page.type(SinputUser, user);
 
-        l.info("登录完成,等待页面元素加载");
-        let balance;
-        for (let i = 0; i < 60; i++)  {
-          await sleep(500);
-          balance = await page.$eval(total, (element) => element);
-          l.debug("余额元素" + balance);
+          await page.waitForSelector(SinputPwd);
+          await page.type(SinputPwd, pwd);
+
+          await sleep(1500);
+          await page.click(Sbutton);
+          await page.waitForNavigation();
+          if (page.url() !== url + "/pages/index/index") {
+            l.info("登录失败,重试");
+            continue;
+          }
         }
-        const regex = /\d+:\d+/;
-        // TODO: 超时
+        l.info("登录完成,等待页面元素加载");
+        let textInfo = {
+          electricity: "", // 已用电
+          balance: "", //余额
+          No: "",
+        };
+        for (let i = 0; i < 60; i++) {
+          await sleep(500);
+          textInfo.electricity = await page.evaluate((sel) => {
+            const element = document.querySelector(sel);
+            return element.textContent;
+          }, Selectricity);
+          if (textInfo.electricity === "_ _._ _") {
+            l.info("等待已用电元素加载");
+            continue;
+          }
+          l.info("已用电加载完毕");
+          if (!getImage) {
+            textInfo.balance = await page.evaluate((sel) => {
+              const element = document.querySelector(sel);
+              return element.textContent;
+            }, Sbalance);
+            textInfo.No = await page.evaluate((sel) => {
+              const element = document.querySelector(sel);
+              return element.textContent;
+            }, SNO);
+            return textInfo;
+          }
+          break;
+        }
       } catch (error) {
         l.error("发生错误" + error + "，重试");
+        continue;
       }
       const screenshotData = await page.screenshot({ fullPage: true });
       l.info("截图完成");

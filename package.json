@@ -1,9 +1,13 @@
 {
   "name": "koishi-plugin-dianfei",
-  "description": "",
+  "description": "自用",
   "version": "0.0.6",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LingLambda/dianfei.git"
+  },
   "files": [
     "lib",
     "dist"
@@ -14,10 +18,17 @@
     "koishi",
     "plugin"
   ],
+  "service": {
+    "required": [
+      "cron",
+      "puppeteer"
+    ]
+  },
   "peerDependencies": {
     "koishi": "^4.10.0"
   },
   "dependencies": {
-    "koishi-plugin-puppeteer": "^3.9.0"
+    "koishi-plugin-cron": "^3.0.0",
+    "koishi-plugin-puppeteer": "^3.5.0"
   }
 }
