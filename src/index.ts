@@ -81,7 +81,8 @@ async function getDianFeiInfo(argv: Argv, ctx: Context, config: Config) {
     );
     return;
   }
-  return argv.session.send(info);
+  argv.session.send(info);
+  return ;
 }
 
 async function timerElectricity(ctx: Context, config: Config) {

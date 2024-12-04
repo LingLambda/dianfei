@@ -39,7 +39,7 @@ export class DianFeiService {
       l.info("加载登录完成");
       try {
         if (page.url() !== url + "/pages/index/index") {
-          await page.waitForSelector(SinputUser, { timeout: 2000 }); // 设置 2 秒超时
+          await page.waitForSelector(SinputUser);
           l.info("登录元素存在");
           await page.waitForSelector(SinputUser);
           await page.type(SinputUser, user);
@@ -81,12 +81,15 @@ export class DianFeiService {
               const element = document.querySelector(sel);
               return element.textContent;
             }, SNO);
+            await page.close();
             return textInfo;
           }
+          await page.close();
           break;
         }
       } catch (error) {
         l.error("发生错误" + error + "，重试");
+        await page.close();
         continue;
       }
       const screenshotData = await page.screenshot({ fullPage: true });
@@ -94,6 +97,7 @@ export class DianFeiService {
       await page.close();
       return h.image(screenshotData, "image/png");
     }
+    await page.close();
     l.error("超时退出");
     return "请求超时";
   }
