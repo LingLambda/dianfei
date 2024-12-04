@@ -51,7 +51,7 @@ export function apply(ctx: Context, config: Config) {
 
   try {
     //定时触发事件
-    ctx.cron("* * * * *", async () => {
+    ctx.cron("0 12 * * *", async () => {
       ctx.emit("dianfei/electricity-detection", null);
     });
   } catch (error) {
