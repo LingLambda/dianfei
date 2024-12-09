@@ -38,6 +38,9 @@ export class DianFeiService {
       });
       l.info("加载登录完成");
       try {
+        if (url.at(-1) === "/") {
+          url = url.slice(0, -1);
+        }
         if (page.url() !== url + "/pages/index/index") {
           await page.waitForSelector(SinputUser);
           l.info("登录元素存在");

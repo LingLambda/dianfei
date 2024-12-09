@@ -77,7 +77,7 @@ async function getDianFeiInfo(argv: Argv, ctx: Context, config: Config) {
 
   if (!config.imageMode) {
     argv.session.send(
-      `======${info["No"]}====== \n 本月已用电：${info["electricity"]} 元 \n 余额：${info["balance"]}`
+      `=====${info["No"]}===== \n 本月已用电：${info["electricity"]} 度 \n 余额：${info["balance"]} 元`
     );
     return;
   }
@@ -98,7 +98,7 @@ async function timerElectricity(ctx: Context, config: Config) {
     for (const broad of config.broadArray) {
       ctx.bots[`${broad.adapter}:${broad.botId}`].sendMessage(
         `${broad.groupId}`,
-        `${textInfo["No"]}的电费仅剩${textInfo["balance"]}了哦!!`
+        `${textInfo["No"]}的电费仅剩${textInfo["balance"]}元了哦!!`
       );
       ctx.sleep(3000);
     }
